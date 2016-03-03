@@ -33,6 +33,7 @@ bity=10
 
 roomx=8
 roomy=8
+let "roomnumber=$roomx*$roomxy"
 
 # Calc binary value of 'scene'
 # Call this function before you do in-/ or decrease
@@ -51,7 +52,7 @@ calcbits()
 }
 
 #
-# Next screen
+# Next screen (go west)
 #
 
 increase()
@@ -63,7 +64,7 @@ increase()
 }
 
 #
-# Previous screen
+# Previous screen (go east)
 #
 
 decrease ()
@@ -74,14 +75,6 @@ decrease ()
     let "scene=255&((scene>>1)|temp)"
     return
 }
-
-#
-# Show start conditions
-#
-
-    calcbits
-    echo $bit8 $bit7 $bit6 $bit5 $bit4 $bit3 $bit2 $bit1
-    echo $scene
 
 #
 # Descripe room
@@ -126,6 +119,19 @@ descripe()
     
     clue=8
 
+    # Exit switch
+    # 0 indicates: No exit
+    # 1 indicates: Exit available
+    # 
+    # These vars are used within the move routine to decide if 
+    # move is alllowed
+
+    dw=0
+    de=0
+    ds=0
+    dn=0
+    dl=0
+
     # Decode exits
     # North?
 
@@ -134,6 +140,7 @@ descripe()
     if [ $d -eq $north ]
     then
 	echo North
+	dn=1
     fi
     
     # South?
@@ -142,6 +149,7 @@ descripe()
     if [ $d -eq $south ]
     then
 	echo South
+	ds=1
     fi
 
     # West?
@@ -150,6 +158,7 @@ descripe()
     if [ $d -eq $west ]
     then
 	echo West
+	dw=1
     fi
     
     # East?
@@ -157,7 +166,8 @@ descripe()
     let "d=$east&$scene"
     if [ $d -eq $east ]
     then
-	echo South
+	echo East
+	de=1
     fi
 
     # Ladder?
@@ -166,6 +176,18 @@ descripe()
     if [ $d -eq $ladder ]
     then
 	echo There is a pit with a ladder
+	dl=1
+    fi
+
+    # If the room has no exits, then build one to prevent the plyer
+    # from running into deathends
+
+    let "exits=$dn+$ds+$de+$dw+$dl"
+    if [ $exits -eq 0 ]
+    then	
+	echo Found a hidden path to the north and to the south
+	dn=1
+	ds=1
     fi
 
     # Landscape
@@ -188,15 +210,28 @@ descripe()
     if [ $d -eq $clue ]
     then
 	echo A secret scroll is here. It is written that the lost bit is 
+	
 	let "dx=$roomx-$bitx"
 	let "dy=$roomy-$bity"
-	echo $dx x Dir    $dy Dir
+
+	if [ $dx -lt 0 ]
+	then 
+	    dvx=east
+	else
+	    dvx=west
+	fi
+
+	if [ $dy -lt 0 ]
+	then 
+	    dvy=south
+	else
+	    dvy=north
+	fi
+   
+	echo $dx steps $dvx from here and $dy steps $dvy of here
+	echo Good luck!
     fi
     
-    # Prompt
-
-    echo Which way n/s/e/w ?
-    read dir
 }
 
 # Start Screen
@@ -210,10 +245,10 @@ echo ----------- XOR- Dungeon, the Revenge of Bool -------------
 echo
 echo Version 1.0 // 2.3.2016 // Berthold Fritz aka. RetroZock
 echo
-echo In this game you seek bools lost bit which is hidden somewere on an $mapx x $mapy map
+echo In this game you seek Bools lost bit which is hidden somewere on an $mapx x $mapy map
 echo The upper left  map- square is room 0, located at 0/0
 echo The lower right map- square is the last room located at $mapx/$mapy
-echo Below the map is a dungeon which. You can access the through pits 
+echo Below the map is a dungeon which. You can access the dungeon through the pits 
 echo
 echo You, the brave player start at location $roomx/$roomy
 echo
@@ -229,44 +264,88 @@ echo In the dungeon you move two rooms at a time
 # Player movement
 ##############################
 
+
+
 while [ 1 ]
-do    
+do
+   
+    # Lost bit found?
+    
+    if [ $roomx -eq $bitx ] && [ $roomy -eq $bity ] 
+    then
+	echo 
+	echo Congratulations! You found the lost bit
+	echo
+	
+	break
+    fi
+    
+
+
+    # Descripe room
+
     descripe
 
-    if [ $dir == "w" ] 
+    # Prompt
+    
+    echo --------------Which way n/s/e/w ?
+    read dir
+
+    # Move
+    
+    # West ok?
+    
+    if [ $dir == "w" ] && [ $dw == 1 ] 
     then
 	if [ $roomx -gt 0 ]
 	then
-		increase
-		let "roomx=roomx-1"
+	    increase
+	    let "roomx=roomx-1"
 	fi
+    else
+	echo West exit  is blocked
     fi
     
-    if [ $dir == "e" ]
+    # East ok?
+    
+    if [ $dir == "e" ] && [ $de == 1 ]
     then
 	if [ $roomx -lt $mapx ]
 	then
-		decrease
-		let "roomx=roomx+1"
+	    decrease
+	    let "roomx=roomx+1"
+	    
 	fi
+    else
+	echo East is blocked
     fi
-
-    if [ $dir == "n" ]
+    
+    # North ok?
+    
+    if [ $dir == "n" ] && [ $dn == 1 ]
     then
 	if [ $roomy -gt 0 ]
 	then
 	    let "scene=scene-1"
 	    let "roomy=roomy-1"
+	    
 	fi
+    else
+	echo North is blocked
     fi
-
-    if [ $dir == "s" ]
+    
+    # South ok?
+    
+    if [ $dir == "s" ] && [ $ds == 1 ]
     then
 	if [ $roomy -lt $mapy ]
 	then
 	    let "scene=scene+1"
 	    let "roomy=roomy+1"
+	    
 	fi
+    else
+	echo South is blocked
     fi
 done
 
