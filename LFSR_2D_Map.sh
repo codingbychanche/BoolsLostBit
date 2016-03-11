@@ -11,6 +11,14 @@
 # Translated to bash- shell by Berthold Fritz 2/2016
 
 # This var stores all map squares within it's first 8 Bit
+#
+# Levels
+#
+# scene set to:    Start room     Lost bit at     difficulty
+# -------------    ----------     -----------    --------------
+#       2             8/8            2/10          verry easy
+#      20             8/8            2/10          hard
+#
 
 scene=2
 
@@ -27,7 +35,7 @@ bity=10
 # Players inventory
 
 water=5
-fire=5
+torch=5
 
 # Pos. of player on map 
 #
@@ -38,6 +46,7 @@ fire=5
 
 roomx=8
 roomy=8
+
 let "roomnumber=$roomx*$roomxy"
 
 # Calc binary value of 'scene'
@@ -114,6 +123,15 @@ descripe()
     #     0    No clue
     #     1    Clue  
     #
+    # ---0---- Trap
+    #   
+    #     0    No trap
+    #     1    Trap
+    #
+    # --1----  In an forest
+    #
+    #     0    Ouitside
+    #     1    Inside
 
     north=1
     south=2
@@ -124,6 +142,13 @@ descripe()
     fire=3
     
     clue=8
+
+    # Trap = 16(trap)+32(forest)
+    # Traps are only in dark forests!
+
+    trap=48    
+    forest=32
+
 
     # Exit switch
     # 0 indicates: No exit
@@ -209,7 +234,41 @@ descripe()
     if [ $d -eq $fire ]
     then
 	echo I can see a fireplace. Your torch burns brightly again!
-	fire=5
+	torch=5
+    fi
+
+    # Forest
+
+    let "d=$forest&$scene"
+    if [ $d -eq $forest ]
+    then
+	if [ $torch -gt 0 ]
+	then
+	    echo You are in a small forest. The path is only dimly lit. At least your torch provides some light.
+	fi
+
+	if [ $torch -eq 0 ]
+	then
+	    echo You are in an dark forest. You can barely see the path. be carefull! You might not see traps hidden in the dark!
+	fi
+    fi
+
+    # Trap?
+    # Traps are only in forests
+
+    let "d=$trap&$scene"
+    if [ $d -eq $trap ]
+    then
+	if [ $torch -gt 0 ]
+	then
+	    echo You see a trap. You are lucky that your torch still burns!
+	fi
+
+	if [ $torch -eq 0 ]
+	then
+	    echo You run into a trtap you could not see in the dark. You are death! The lost bit is lost forever
+	    break
+	fi
     fi
 
     # A clue?
@@ -257,8 +316,8 @@ descripe()
 	echo You are thirsty
     fi
 
-    echo Torch: $fire
-    if [ $fire -lt 3 ]
+    echo Torch: $torch
+    if [ $torch -lt 3 ]
     then
 	echo Your torch seems to fade........
     fi
@@ -277,7 +336,7 @@ echo ----------- XOR- Dungeon, the Revenge of Bool -------------
 echo
 echo Version 1.0 // 2.3.2016 // Berthold Fritz aka. RetroZock
 echo
-echo In this game you seek Bools lost bit which is hidden somewere on an $mapx x $mapy map
+becho In this game you seek Bools lost bit which is hidden somewere on an $mapx x $mapy map
 echo The upper left  map- square is room 0, located at 0/0
 echo The lower right map- square is the last room located at $mapx/$mapy
 echo Below the map is a dungeon which. You can access the dungeon through the pits 
@@ -401,9 +460,9 @@ do
 
     # Check inventory
 
-    if [ $fire -ge 0 ]
+    if [ $torch -ge 0 ]
     then
-	let "fire=fire-1"
+	let "torch=torch-1"
     fi
 
     if [ $water -gt 0 ]
