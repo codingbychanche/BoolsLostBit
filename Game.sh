@@ -16,24 +16,15 @@
 #
 # scene set to:    Start room     Lost bit at     difficulty
 # -------------    ----------     -----------    --------------
-#       2             8/8            2/10          verry easy
-#       7             8/8            7/1           hard
-#      20             8/8            2/10          hard
-#      24             8/8            2/10          
-#     190             8/8            2/10          hard
-#     200             8/8            20/2          hard, no solution
-#     100             8/8            20/2          hard
-#     102             8/8             6/1          hard, solution!!!
-#            
-#                     Solved in: 23 Steps
-#                     Solved in: 20 Steps
+#       2             8/8            2/10          very easy
+#       2             8/8            6/1           Hard, solution possible
 #
 # Issues
 #
 # - If at the edge of map (e.g. x=0/y=0 or x=23/y=0) and the only exit
 #   is accross map border the player runs into an death end. 
 
-scene=102
+scene=2
 
 # Map size
 
@@ -54,18 +45,9 @@ torch=5
 
 steps=0
 
-# Direction switches
-
-dn=0
-ds=0
-dw=0
-de=0
-dd=0
-
 # Pre init prompt
 
-dir="My desk and stepped into this great adventure leaving reality behind...."
-
+dir="n"
 
 # Pos. of player on map 
 #
@@ -93,45 +75,6 @@ calcbits()
     let "bit6=(scene & 32)/32"
     let "bit7=(scene & 64)/64"
     let "bit8=(scene & 128)/128"
-    return
-}
-
-#
-# Draw a map
-# NOT WORKING YET
-#
-
-map()
-{
-    let "sc=scene"
-    echo ------ $sc
-
-    # Move to the leftmost square on map (west)
-
-    resetrow
-
-    # Map 
-
-    y=0
-    x=0
-    c=0
-
-    while [ $y -lt $mapy ]
-    do 
-	while [ $c -lt $mapx ]
-	do
-	    let "c=c+1"
-	    printf "$scene\t"
-	    decrease
-	done
-	let "y=y+1"
-	c=0
-	resetrow
-	let "scene=scene+1"
-	printf "\n"
-    done
-    let "scene=sc"
-    echo ------ $scene
     return
 }
 
@@ -288,7 +231,6 @@ descripe()
     printf "******* You are in room x/y $roomx/$roomy\troom number:$roomnumber\tSteps made:$steps                 $landscape ******* \n"
     printf "\e[m" # Reset all escapes
     echo Your room looks like:$scene
-    
 
     # 'scene', first 8- Bits:
     #
@@ -346,14 +288,9 @@ descripe()
     de=0
     ds=0
     dn=0
-    dd=0
+    dd=0 # Down/ up movement possible?
 
     # Decode exits
-
-    # Check if the previous room had an exit in the oposite
-    # direction. If so, create an exit to that exit in the
-    # current room.
-
     # Check current room
 
     # North?
@@ -363,12 +300,6 @@ descripe()
     then                                   
 	echo North
 	dn=1
-    else                                   # Map does not allow exit north
-	if [ $dir = "s" ]                  # Check is we entered from north and
-	then                               # if so, create an exit in that dir
-	    echo back North                # Dont't like death ends :-)
-	    dn=1
-	fi
     fi
 
     # South?
@@ -376,23 +307,17 @@ descripe()
     let "d=$south&$scene"
     if [ $d -eq $south ]
     then
-	if [ $ds -eq 0 ]
-	then
-	    echo South
-	    ds=1
-	fi
+	echo South
+	ds=1
     fi
-
+    
     # West?
 
     let "d=$west&$scene"
     if [ $d -eq $west ] 
     then
-	if [ $dw -eq 0 ]
-	then
-	    echo West
-	    dw=1
-	fi
+	echo West
+	dw=1
     fi
 
     # East?
@@ -400,13 +325,10 @@ descripe()
     let "d=$east&$scene"
     if [ $d -eq $east ] 
     then
-	if [ $de -eq 0 ]
-	then
-	    echo East
-	    de=1
-	fi
+	echo East
+	de=1
     fi
-
+    
     # Ladder?
 
     let "d=$ladder&$scene"
@@ -416,7 +338,7 @@ descripe()
 	dd=1
     fi
 
-    # If the room has no exits, then build one to prevent the player
+    # If the room has no exits or only one, then build one to prevent the player
     # from running into deathends
 
     let "exits=$dn+$ds+$de+$dw+$dd"
@@ -425,6 +347,14 @@ descripe()
 	echo Found a hidden path running from north to south
 	dn=1
 	ds=1
+    fi
+
+    let "exits=$dn+$ds+$de+$dw+$dd"
+    if [ $exits -lt 2 ]
+    then	
+	echo Found a hidden path running from east to west
+	de=1
+	dw=1
     fi
 
     # Check if we are in the wilderness
@@ -520,7 +450,7 @@ descripe()
 	    echo $dx steps $dvx from here and $dy steps $dvy of here
 	    echo Good luck!
 	fi
-    fi # End of Wilderness descrition
+    fi # End of Wilderness descrpition
 
     # Dungeon?
 
@@ -634,7 +564,7 @@ do
 
     # Move
     
-    # West look?
+    # look?
 
     if [ $dir = "l" ] 
     then
@@ -650,7 +580,7 @@ do
 	then
 	    if [ $level -eq 1 ]
 	    then
-		down
+		up
 		let "level=level-1"
 		descripe
 	    fi
@@ -684,9 +614,22 @@ do
 	then
 	    if [ $dw -eq 1 ] 
 	    then
-	    increase
-	    let "roomx=roomx-1"
-	    descripe
+
+		# Check if in dungeon.
+
+		if [ $level -eq 0 ]
+		then
+		    increase
+		    let "roomx=roomx-1"
+		    descripe
+		# If in dungeon, we move 2- steps at a time
+		
+		else
+		    increase
+		    increase
+		    let "roomx=roomx-2"
+		    descripe
+		fi  
 	    else
 		echo West is blocked!
 	    fi	
@@ -701,16 +644,24 @@ do
 	then
 	    if [ $de -eq 1 ]
 	    then
-		decrease
-		let "roomx=roomx+1"
-		descripe
+		if [ $level -eq 0 ]
+		then
+		    decrease
+		    let "roomx=roomx+1"
+		    descripe
+		else
+		    decrease
+		    decrease
+		    let "roomx=roomx+2"
+		    descripe
+		fi
 	    else
 		echo East is blocked
 	    fi
         fi
     fi
     
-    # North ok?
+    # NORTH OK?
     
     if [ $dir = "n" ] 
     then
@@ -718,9 +669,17 @@ do
 	then
 	    if [ $dn -eq 1 ]
 	    then
-		north
-		let "roomy=roomy-1"
-		descripe
+		if [ $level -eq 0 ]
+		then
+		    north
+		    let "roomy=roomy-1"
+		    descripe
+		else
+		    north
+		    north
+		    let "roomy=roomy-2"
+		    descripe
+		fi
 	    else
 		echo North is blocked!
 	    fi
@@ -736,9 +695,17 @@ do
 	then
 	    if  [ $ds -eq 1 ]
 	    then
-		south
-		let "roomy=roomy+1"
-		descripe
+		if [ $level -eq 0 ]
+		then
+		    south
+		    let "roomy=roomy+1"
+		    descripe
+		else
+		    south
+		    south
+		    let "roomy=roomy+2"
+		    descripe
+		fi
 	    else
 		echo South is blocked!
 	    fi
