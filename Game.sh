@@ -17,7 +17,7 @@
 # scene set to:    Start room     Lost bit at     difficulty
 # -------------    ----------     -----------    --------------
 #       2             8/8            2/10          very easy
-#       2             8/8            6/1           Hard, solution possible
+#       2             8/8            6/1           Hard, solution possible after 28 steps!
 #
 # Issues
 #
@@ -95,6 +95,14 @@ resetrow()
     let "scene=scc"
 return
 }
+
+gameends()
+{
+    echo The adventure ends here brave $name
+
+    break
+}
+
 
 #
 # Player movement on map
@@ -409,7 +417,7 @@ descripe()
 	    
 	    if [ $torch -eq 0 ]
 	    then
-		echo You run into a trtap you could not see in the dark. You are death! The lost bit is lost forever
+		echo You run into a trap you could not see in the dark. You are death! The lost bit is lost forever
 		break
 	    fi
 	fi
@@ -724,12 +732,9 @@ do
 	let "water=water-1"
     else
 	echo You run out of water! You are death! The lost bit is lost forever....
-	break
+	gameends
     fi
-done
-
-
-    
+done    
 
 
 
