@@ -1,7 +1,11 @@
-#/bin/bash
+#!/bin/bash
 #
-# 2D Map generator.
-# This generates an world map based on an 8 Bit LFSR.
+# Bools Lost Bit
+#
+# A clasical adventure game where you have to find a mystical
+# hidden object featuring a 2- level 2d map which is generated 
+# from the players name.
+#
 # The algorithms are based on the technique used in the game 
 # 'Pitfall 1'
 #
@@ -9,22 +13,13 @@
 # http://meatfighter.com/pitfall/
 #
 # Translated to bash- shell by Berthold Fritz 2/2016
-
-# This var stores all map squares within it's first 8 Bit
 #
-# Levels
+# Highscores:
 #
-# scene set to:    Start room     Lost bit at     difficulty
-# -------------    ----------     -----------    --------------
-#       2             8/8            2/10          very easy
-#       2             8/8            6/1           Hard, solution possible after 28 steps!
+# Avatar    Best Result   Date    
+# ------    -----------   -------
+# Frodo     12 Steps      7.8.2016
 #
-# Issues
-#
-# - If at the edge of map (e.g. x=0/y=0 or x=23/y=0) and the only exit
-#   is accross map border the player runs into an death end. 
-
-scene=2
 
 # Map size
 
@@ -33,8 +28,8 @@ mapy=20
 
 # Pos of the lost bit
 
-bitx=6
-bity=1
+bitx=3
+bity=10
 
 # Players inventory
 
@@ -76,24 +71,6 @@ calcbits()
     let "bit7=(scene & 64)/64"
     let "bit8=(scene & 128)/128"
     return
-}
-
-#
-# Reset row
-# Moves to the leftmost pos on map and sets 'scene' to the according value
-#
-
-resetrow()
-{
-    let "cc=mapx"
-    let "scc=scene"
-    while [ $cc -gt 0 ]
-    do
-	increase
-	let "cc=cc-1"
-    done
-    let "scene=scc"
-return
 }
 
 gameends()
@@ -236,7 +213,18 @@ descripe()
     echo
     printf "\ec"   # Clear terminal window
     printf "\e[7m" # Inv
-    printf "******* You are in room x/y $roomx/$roomy\troom number:$roomnumber\tSteps made:$steps                 $landscape ******* \n"
+    
+    #
+    # Check if player has run over the edges of the known world
+    #
+
+    if [ $roomx -gt 0 ] && [ $roomy -gt 0 ]
+    then
+	printf "******* You are in room x/y $roomx/$roomy\troom number:$roomnumber\tSteps made:$steps                 $landscape ******* \n"
+    else
+	printf "******* You are lost in the forest\tSteps made:$steps\t                 $landscape ******* \n"
+    fi
+    
     printf "\e[m" # Reset all escapes
     echo Your room looks like:$scene
 
@@ -443,9 +431,9 @@ descripe()
 	    
 	    if [ $dx -lt 0 ]
 	    then 
-		dvx=west
-	    else
 		dvx=east
+	    else
+		dvx=west
 	    fi
 	    
 	    if [ $dy -lt 0 ]
@@ -538,6 +526,9 @@ echo To get a description of your room you can type: l
 echo
 printf "Tell me your name:"
 read name
+scene=$(java HashValue $name)
+printf "So let's $name's quest begin (press return)"
+read ret
 
 # Descripe start room
 
@@ -555,20 +546,23 @@ do
    
     # Lost bit found?
     
-    if [ $roomx -eq $bitx ] && [ $roomy -eq $bity ] 
+    if [ $roomx -eq $bitx ] && [ $roomy -eq $bity ] &&  [ $level -eq 0 ]
     then
 	echo 
 	echo Congratulations! You found the lost bit
 	echo
 	
-	break
+	gameends
     fi
    
     # Prompt
     
-    echo --------------Which way n/s/e/w ?
+    
+    echo --------------Which way n/s/e/w u or d ?
     read dir
+
     let "steps=steps+1"
+    
 
     # Move
     
@@ -669,7 +663,7 @@ do
         fi
     fi
     
-    # NORTH OK?
+    # North ok?
     
     if [ $dir = "n" ] 
     then
@@ -722,7 +716,7 @@ do
 
     # Check inventory
 
-    if [ $torch -ge 0 ]
+    if [ $torch -ge 1 ]
     then
 	let "torch=torch-1"
     fi
