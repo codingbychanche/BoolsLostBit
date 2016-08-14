@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Bools Lost Bit
+# Bools Lost Bit 
 #
 # A clasical adventure game where you have to find a mystical
 # hidden object featuring a 2- level 2d map which is generated 
@@ -18,18 +18,12 @@
 #
 # Avatar    Best Result   Date    
 # ------    -----------   -------
-# Frodo     12 Steps      7.8.2016
-#
+# Frodo     13 Steps      14.8.2016
 
 # Map size
 
 mapx=20
 mapy=20 
-
-# Pos of the lost bit
-
-bitx=3
-bity=10
 
 # Players inventory
 
@@ -518,16 +512,30 @@ echo Below the map is a dungeon which. You can access the dungeon through the pi
 echo
 echo You, the brave player start at location $roomx/$roomy
 echo
-echo You move by telling me the desired direction which is either north or south, west or east 
+echo You move by telling me the desiered direction which is either north or south, west or east 
 echo If you can see a pit you can go up or down. Use the first letter of the direction you want to
 echo travel: n,s,e,w,u or d
 echo
 echo To get a description of your room you can type: l
 echo
+
+# Get players name and calc hash- value which determines the map
+
 printf "Tell me your name:"
 read name
 scene=$(java HashValue $name)
+
+# Bits 1 to 3 of 'scene' are the x pos of bools bit
+# 128 64 32 16 8 4 2 1
+
+let "bitx=scene & 3"
+
+# Bits 4 to 7 of 'scene' are the y pos of bools bit
+
+let "bity=scene & 12"
+
 printf "So let's $name's quest begin (press return)"
+echo $bitx ---- $bity
 read ret
 
 # Descripe start room
