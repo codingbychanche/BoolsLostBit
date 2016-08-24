@@ -620,105 +620,90 @@ do
 
     if [ $dir = "w" ] 
     then
-	if [ $roomx -gt 0 ]
+	
+    # Check if in dungeon.
+	
+	if [ $level -eq 0 ]
 	then
-	    if [ $dw -eq 1 ] 
-	    then
-
-		# Check if in dungeon.
-
-		if [ $level -eq 0 ]
-		then
-		    increase
-		    let "roomx=roomx-1"
-		    descripe
-		# If in dungeon, we move 2- steps at a time
-		
-		else
-		    increase
-		    increase
-		    let "roomx=roomx-2"
-		    descripe
-		fi  
-	    else
-		echo West is blocked!
-	    fi	
-	fi
-    fi
+	    increase
+	    let "roomx=roomx-1"
+	    descripe
+	    # If in dungeon, we move 2- steps at a time
+		    
+	else
+	    increase
+	    increase
+	    let "roomx=roomx-2"
+	    descripe
+	fi  
+    else
+	echo West is blocked!
+    fi	
     
     # East ok?
     
     if [ $dir = "e" ] 
     then
-	if [ $roomx -lt $mapx ]
+	if [ $de -eq 1 ]
 	then
-	    if [ $de -eq 1 ]
+	    if [ $level -eq 0 ]
 	    then
-		if [ $level -eq 0 ]
-		then
-		    decrease
-		    let "roomx=roomx+1"
-		    descripe
-		else
-		    decrease
-		    decrease
-		    let "roomx=roomx+2"
-		    descripe
-		fi
+		decrease
+		let "roomx=roomx+1"
+		descripe
 	    else
-		echo East is blocked
+		decrease
+		decrease
+		let "roomx=roomx+2"
+		descripe
 	    fi
-        fi
+	else
+	    echo East is blocked
+	fi
     fi
     
     # North ok?
     
     if [ $dir = "n" ] 
     then
-	if [ $roomy -gt 0 ]
+
+	if [ $dn -eq 1 ]
 	then
-	    if [ $dn -eq 1 ]
+	    if [ $level -eq 0 ]
 	    then
-		if [ $level -eq 0 ]
-		then
-		    north
-		    let "roomy=roomy-1"
-		    descripe
-		else
-		    north
-		    north
-		    let "roomy=roomy-2"
-		    descripe
-		fi
+		north
+		let "roomy=roomy-1"
+		descripe
 	    else
-		echo North is blocked!
+		north
+		north
+		let "roomy=roomy-2"
+		descripe
 	    fi
-	fi	
-     
-    fi
+	else
+	    echo North is blocked!
+	fi
+    fi	
     
     # South ok?
     
     if [ $dir = "s" ] 
     then
-	if [ $roomy -lt $mapy ]
+	if  [ $ds -eq 1 ]
 	then
-	    if  [ $ds -eq 1 ]
+	    if [ $level -eq 0 ]
 	    then
-		if [ $level -eq 0 ]
-		then
-		    south
-		    let "roomy=roomy+1"
-		    descripe
-		else
-		    south
-		    south
-		    let "roomy=roomy+2"
-		    descripe
-		fi
+		south
+		let "roomy=roomy+1"
+		descripe
 	    else
-		echo South is blocked!
+		south
+		south
+		let "roomy=roomy+2"
+		descripe
 	    fi
+	else
+	    echo South is blocked!
 	fi
     fi
 
