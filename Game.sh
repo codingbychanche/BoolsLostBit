@@ -12,13 +12,11 @@
 # An in depth discusion about the LFSR used can be found at:
 # http://meatfighter.com/pitfall/
 #
-# Translated to bash- shell by Berthold Fritz 2/2016
+# Needs Java(TM) SE Runtime Environment (build 1.8.0_66-b17) for:
+# o Calculationg a 8- bit hash value from the dungeon masters name (see line 530)
 #
-# Highscores:
-#
-# Avatar    Best Result   Date    
-# ------    -----------   -------
-# Frodo     13 Steps      14.8.2016
+# Berthold Fritz 10/2016
+# Version: In your shell type "git log" for a detailed change- log and version information.
 
 # Map size
 
@@ -69,7 +67,7 @@ calcbits()
 
 gameends()
 {
-    echo The adventure ends here brave $name
+    echo The adventure ends here brave $avatar
 
     break
 }
@@ -171,7 +169,7 @@ down()
 }
 
 #
-# Up
+# UP
 #
 
 up()
@@ -216,11 +214,17 @@ descripe()
     then
 	printf "******* You are in room x/y $roomx/$roomy\troom number:$roomnumber\tSteps made:$steps                 $landscape ******* \n"
     else
-	printf "******* You are lost in the forest\tSteps made:$steps\t                 $landscape ******* \n"
+	if [ $level -eq 0 ]
+	then
+	    printf "******* You are lost in the forest\tSteps made:$steps\t                 $landscape ******* \n"
+	else
+	    printf "******* You are lost in the Dungeon\tSteps made:$steps\t                $landscape ******* \n"
+    
+	fi
     fi
     
     printf "\e[m" # Reset all escapes
-    echo Your room looks like:$scene
+    # echo Your room looks like:$scene
 
     # 'scene', first 8- Bits:
     #
@@ -409,36 +413,42 @@ descripe()
 	let "d=$clue&$scene"
 	if [ $d -eq $clue ]
 	then
-	    echo A secret scroll is here. It is written that the lost bit is 
 	    
-	    let "dx=$roomx-$bitx"
-	    if [ $dx -lt 0 ]
+	    # Do not display message when player got lost in the wilderness
+
+	    if [ $roomx -gt 0 ] && [ $roomy -gt 0 ]
 	    then
-		let "dx=dx * - 1"
-	    fi
+		echo A secret scroll is here. It is written that the lost bit is 
 	    
-	    let "dy=$roomy-$bity"
-	    if [ $dy -lt 0 ]
-	    then
-		let "dy=dy * - 1"
-	    fi
+		let "dx=$roomx-$bitx"
+		if [ $dx -lt 0 ]
+		then
+		    let "dx=dx * - 1"
+		fi
 	    
-	    if [ $dx -lt 0 ]
-	    then 
-		dvx=east
-	    else
-		dvx=west
+		let "dy=$roomy-$bity"
+		if [ $dy -lt 0 ]
+		then
+		    let "dy=dy * - 1"
+		fi
+		
+		if [ $dx -lt 0 ]
+		then 
+		    dvx=east
+		else
+		    dvx=west
+		fi
+		
+		if [ $dy -lt 0 ]
+		then 
+		    dvy=north
+		else
+		    dvy=south
+		fi
+      
+		echo $dx steps $dvx from here and $dy steps $dvy of here
+		echo Good luck!
 	    fi
-	    
-	    if [ $dy -lt 0 ]
-	    then 
-		dvy=north
-	    else
-		dvy=south
-	    fi
-	    
-	    echo $dx steps $dvx from here and $dy steps $dvy of here
-	    echo Good luck!
 	fi
     fi # End of Wilderness descrpition
 
@@ -521,9 +531,12 @@ echo
 
 # Get players name and calc hash- value which determines the map
 
-printf "Tell me your name:"
+printf "Choose your dungeon master!:"
 read name
-scene=$(java HashValue $name)
+scene=$(java HashValue $name) # If you do not have jave installed, remove this line and replace with "scene=your 8- bit value"
+
+printf "And your avatars name is?"
+read avatar
 
 # Bits 1 to 3 of 'scene' are the x pos of bools bit
 # 128 64 32 16 8 4 2 1
@@ -534,8 +547,9 @@ let "bitx=scene & 3"
 
 let "bity=scene & 12"
 
-printf "So let's $name's quest begin (press return)"
-echo $bitx ---- $bity
+printf "$name say's: Your fate is sealed $avatar. You may fight bravely but you will never win!"
+printf "So let's $avatar's quest begin (press return)"
+# echo $bitx ---- $bity
 read ret
 
 # Descripe start room
@@ -620,24 +634,27 @@ do
 
     if [ $dir = "w" ] 
     then
-	
-    # Check if in dungeon.
-	
-	if [ $level -eq 0 ]
+	if [ $dw -eq 1 ]
 	then
-	    increase
-	    let "roomx=roomx-1"
-	    descripe
-	    # If in dungeon, we move 2- steps at a time
+        # Check if in dungeon.
+	
+	    if [ $level -eq 0 ]
+	    then
+		increase
+		let "roomx=roomx-1"
+		descripe
+	  
+            # If in dungeon, we move 2- steps at a time
 		    
+	    else
+		increase
+		increase
+		let "roomx=roomx-2"
+		descripe
+	    fi  
 	else
-	    increase
-	    increase
-	    let "roomx=roomx-2"
-	    descripe
-	fi  
-    else
-	echo West is blocked!
+	    echo West is blocked!
+	fi
     fi	
     
     # East ok?
