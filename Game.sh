@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Bools Lost Bit 
+# Bools Lost Bit V1.0
 #
 # A clasical adventure game where you have to find a mystical
 # hidden object featuring a 2- level 2d map which is generated 
@@ -13,9 +13,9 @@
 # http://meatfighter.com/pitfall/
 #
 # Needs Java(TM) SE Runtime Environment (build 1.8.0_66-b17) for:
-# o Calculationg a 8- bit hash value from the dungeon masters name (see line 530)
+# o Calculating a 8- bit hash value from the dungeon masters name (see line 530)
 #
-# Berthold Fritz 10/2016
+# Berthold Fritz 11/2016
 # Version: In your shell type "git log" for a detailed change- log and version information.
 
 # Map size
@@ -68,7 +68,7 @@ calcbits()
 gameends()
 {
     echo The adventure ends here brave $avatar
-
+    
     break
 }
 
@@ -421,16 +421,10 @@ descripe()
 		echo A secret scroll is here. It is written that the lost bit is 
 	    
 		let "dx=$roomx-$bitx"
-		if [ $dx -lt 0 ]
-		then
-		    let "dx=dx * - 1"
-		fi
-	    
+				
+	   
 		let "dy=$roomy-$bity"
-		if [ $dy -lt 0 ]
-		then
-		    let "dy=dy * - 1"
-		fi
+		
 		
 		if [ $dx -lt 0 ]
 		then 
@@ -441,11 +435,21 @@ descripe()
 		
 		if [ $dy -lt 0 ]
 		then 
-		    dvy=north
-		else
 		    dvy=south
+		else
+		    dvy=north
 		fi
-      
+
+		if [ $dx -lt 0 ]
+		then
+		    let "dx=dx * - 1"
+		fi
+
+		if [ $dy -lt 0 ]
+		then
+		    let "dy=dy * - 1"
+		fi
+
 		echo $dx steps $dvx from here and $dy steps $dvy of here
 		echo Good luck!
 	    fi
