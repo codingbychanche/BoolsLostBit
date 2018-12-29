@@ -13,7 +13,7 @@
 # http://meatfighter.com/pitfall/
 #
 # Needs Java(TM) SE Runtime Environment (build 1.8.0_66-b17) for:
-# o Calculating a 8- bit hash value from the dungeon masters name (see line 530)
+# o Calculating a 8- bit hash value from the dungeon masters name (see line 540)
 #
 # Berthold Fritz 11/2016
 # Version: In your shell type "git log" for a detailed change- log and version information.
@@ -513,16 +513,16 @@ printf "\ec"      # Clear terminal window
 echo Welcome to: 
 echo 
 printf "\e[32m"   # Green text
-echo ----------- XOR- Dungeon, the Revenge of Bool -------------
+echo ----------- Bools Lost Bit ----------
 printf "\e[m" # Reset all escapes
 echo
-echo Version 1.0 // 2.3.2016 // Berthold Fritz aka. RetroZock
+echo Version 1.0 // 26.11.2016 // Berthold Fritz aka. RetroZock
 echo
 
 echo In this game you seek Bools lost bit which is hidden somewere on an $mapx x $mapy map
 echo The upper left  map- square is room 0, located at 0/0
 echo The lower right map- square is the last room located at $mapx/$mapy
-echo Below the map is a dungeon which. You can access the dungeon through the pits 
+echo Below the map is a dungeon which can be accessed through pits you will find once in a while 
 echo
 echo You, the brave player start at location $roomx/$roomy
 echo
