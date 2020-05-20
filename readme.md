@@ -3,6 +3,9 @@ Bools Lost Bit
 A classical text adventure game for the bash shell.  
 The map is created depending on the name of the dungeon master you choose. 
 
+![](Shot_1.png) ![](Shot_2.png)
+
+
 Abstract
 --------
 Your task: Find Bools Lost Bit which is hidden somewhere on a 2d map. You start in the wilderness.
