@@ -19,5 +19,6 @@ Dungeon Masters
 This chapter contains a list of dungeon masters I have played, their difficulty and my score reaced. 
 
 Frodo	     easy, 13 steps needed so far
+goblin	     easy, 9 steps
 Jasmin	     quite difficult
 
